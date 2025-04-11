@@ -114,7 +114,7 @@
   </style>
 </head>
 <body>
-
+<audio id="spinSound" src="https://cdn.pixabay.com/audio/2022/10/31/audio_877f8a52f3.mp3"></audio>
   <div class="dropdown">
     <label for="singleOption">Predict your answer</label>
     <select id="singleOption">
@@ -153,8 +153,6 @@
 
   <div id="shareStatus"></div>
 
-  <audio id="spinSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_3782431c18.mp3"></audio>
-
   <script>
     let angle = 0;
     let segments = ["Relatives", "Friends", "Parents and Siblings", "Strangers"];
@@ -168,27 +166,30 @@
     }
 
     function spin() {
-      const spinSound = document.getElementById("spinSound");
-      spinSound.currentTime = 0;
-      spinSound.play();
+  const spinSound = document.getElementById("spinSound");
+  spinSound.currentTime = 0;
+  spinSound.play();
 
-      const baseRotations = 10800; // 30 full spins
-      const randomOffset = Math.floor(Math.random() * 360);
-      angle += baseRotations + randomOffset;
+  const baseRotations = 10800; // 30 full spins
+  const randomOffset = Math.floor(Math.random() * 360);
+  angle += baseRotations + randomOffset;
 
-      const wheel = document.getElementById("wheel");
-      wheel.style.transform = `rotate(${angle}deg)`;
+  const wheel = document.getElementById("wheel");
+  wheel.style.transform = `rotate(${angle}deg)`;
 
-      document.getElementById("spinAgainBtn").style.display = "none";
-      document.getElementById("result").textContent = "";
+  document.getElementById("spinAgainBtn").style.display = "none";
+  document.getElementById("result").textContent = "";
 
-      setTimeout(() => {
-        const finalAngle = angle % 360;
-        const index = Math.floor((360 - finalAngle + 45) % 360 / 90);
-        document.getElementById("result").textContent = `Result: ${segments[index]}`;
-        document.getElementById("spinAgainBtn").style.display = "inline-block";
-      }, 8000);
-    }
+  // Stop the sound exactly after 8 seconds
+  setTimeout(() => {
+    spinSound.pause();
+    spinSound.currentTime = 0;
+
+    const finalAngle = angle % 360;
+    const index = Math.floor((360 - finalAngle + 45) % 360 / 90);
+    document.getElementById("result").textContent = `Result: ${segments[index]}`;
+    document.getElementById("spinAgainBtn").style.display = "inline-block";
+  }, 8000);
 
     function resetSpin() {
       document.getElementById("spinAgainBtn").style.display = "none";
