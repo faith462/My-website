@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Spinning Wheel</title>
+  <style>
+    body {
+      background: #2ec4b6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    .dropdown {
+      margin-bottom: 20px;
+    }
+
+    select {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    .wheel-container {
+      position: relative;
+      width: 320px;
+      height: 320px;
+    }
+
+    .wheel {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 10px solid #fff;
+      position: relative;
+      overflow: hidden;
+      transform: rotate(0deg);
+      transition: transform 8s linear;
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .segment {
+      width: 50%;
+      height: 50%;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #fff;
+      border: 1px solid #fff;
+      text-align: center;
+      padding: 10px;
+    }
+
+    .segment:nth-child(1) { background: #ff6b6b; }
+    .segment:nth-child(2) { background: #feca57; }
+    .segment:nth-child(3) { background: #54a0ff; }
+    .segment:nth-child(4) { background: #1dd1a1; }
+
+    .arrow {
+      width: 0;
+      height: 0;
+      border-left: 20px solid transparent;
+      border-right: 20px solid transparent;
+      border-bottom: 30px solid yellow;
+      position: absolute;
+      top: -15px;
+      left: 50%;
+      transform: translateX(-50%) rotate(180deg);
+      z-index: 2;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #ff9f1c;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #result, #shareStatus {
+      margin-top: 15px;
+      font-size: 18px;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    label {
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    #shareOptions button {
+      background: #333;
+      color: #fff;
+      margin: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dropdown">
+    <label for="singleOption">Predict your answer</label>
+    <select id="singleOption">
+      <option>Relatives</option>
+      <option>Friends</option>
+      <option>Parents and Siblings</option>
+      <option>Strangers</option>
+    </select>
+    <button onclick="setOption()">Set Option</button>
+  </div>
+
+  <div class="wheel-container">
+    <div class="arrow"></div>
+    <div class="wheel" id="wheel">
+      <div class="segment" id="seg1">Relatives</div>
+      <div class="segment" id="seg2">Friends</div>
+      <div class="segment" id="seg3">Parents and Siblings</div>
+      <div class="segment" id="seg4">Strangers</div>
+    </div>
+  </div>
+
+  <!-- Added margin-top for spacing below -->
+  <button onclick="spin()" style="margin-top: 30px;">Spin</button>
+
+  <button id="spinAgainBtn" onclick="resetSpin()" style="display:none;">Spin Again</button>
+
+  <div id="result"></div>
+
+  <button onclick="toggleShareOptions()">Share Result</button>
+  <div id="shareOptions" style="display:none; margin-top: 10px;">
+    <button onclick="shareTo('whatsapp')">WhatsApp</button>
+    <button onclick="shareTo('facebook')">Facebook</button>
+    <button onclick="shareTo('twitter')">Twitter</button>
+    <button onclick="copyForInstagram()">Instagram (copy result)</button>
+  </div>
+
+  <div id="shareStatus"></div>
+
+  <audio id="spinSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_3782431c18.mp3"></audio>
+
+  <script>
+    let angle = 0;
+    let segments = ["Relatives", "Friends", "Parents and Siblings", "Strangers"];
+
+    function setOption() {
+      const selected = document.getElementById("singleOption").value;
+      segments = [selected, selected, selected, selected];
+      for (let i = 1; i <= 4; i++) {
+        document.getElementById(`seg${i}`).textContent = selected;
+      }
+    }
+
+    function spin() {
+      const spinSound = document.getElementById("spinSound");
+      spinSound.currentTime = 0;
+      spinSound.play();
+
+      const baseRotations = 10800; // 30 full spins
+      const randomOffset = Math.floor(Math.random() * 360);
+      angle += baseRotations + randomOffset;
+
+      const wheel = document.getElementById("wheel");
+      wheel.style.transform = `rotate(${angle}deg)`;
+
+      document.getElementById("spinAgainBtn").style.display = "none";
+      document.getElementById("result").textContent = "";
+
+      setTimeout(() => {
+        const finalAngle = angle % 360;
+        const index = Math.floor((360 - finalAngle + 45) % 360 / 90);
+        document.getElementById("result").textContent = `Result: ${segments[index]}`;
+        document.getElementById("spinAgainBtn").style.display = "inline-block";
+      }, 8000);
+    }
+
+    function resetSpin() {
+      document.getElementById("spinAgainBtn").style.display = "none";
+      document.getElementById("result").textContent = "";
+    }
+
+    function toggleShareOptions() {
+      const options = document.getElementById("shareOptions");
+      options.style.display = options.style.display === "none" ? "block" : "none";
+    }
+
+    function shareTo(platform) {
+      const resultText = document.getElementById("result").textContent || "Check out this spin result!";
+      const url = encodeURIComponent("https://yourwebsite.com");
+      const text = encodeURIComponent(resultText);
+
+      let shareUrl = "";
+
+      switch(platform) {
+        case "whatsapp":
+          shareUrl = `https://wa.me/?text=${text}`;
+          break;
+        case "facebook":
+          shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${text}`;
+          break;
+        case "twitter":
+          shareUrl = `https://twitter.com/intent/tweet?text=${text}`;
+          break;
+      }
+
+      if (shareUrl) {
+        window.open(shareUrl, "_blank");
+      }
+    }
+
+    function copyForInstagram() {
+      const resultText = document.getElementById("result").textContent;
+      if (resultText) {
+        navigator.clipboard.writeText(resultText).then(() => {
+          document.getElementById("shareStatus").textContent = "Copied! Paste it on Instagram Story, Chat, or Feed.";
+          setTimeout(() => {
+            document.getElementById("shareStatus").textContent = "";
+          }, 4000);
+        });
+      }
+    }
+  </script>
+
+</body>
+</html>
